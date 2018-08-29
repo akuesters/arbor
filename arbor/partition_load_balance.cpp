@@ -13,7 +13,7 @@ namespace arb {
 domain_decomposition partition_load_balance(
     const recipe& rec,
     proc_allocation nd,
-    const execution_context* ctx,
+    const execution_context& ctx,
     partition_hint_map hint_map)
 {
     struct partition_gid_domain {
@@ -31,8 +31,8 @@ domain_decomposition partition_load_balance(
 
     using util::make_span;
 
-    unsigned num_domains = ctx->distributed.size();
-    unsigned domain_id = ctx->distributed.id();
+    unsigned num_domains = ctx.distributed->size();
+    unsigned domain_id = ctx.distributed->id();
     auto num_global_cells = rec.num_cells();
 
     auto dom_size = [&](unsigned dom) -> cell_gid_type {
@@ -65,8 +65,8 @@ domain_decomposition partition_load_balance(
     // of cell group updates according to rules such as the back end on
     // which the cell group is running.
 
-    auto has_gpu_backend = [](cell_kind c) {
-        return cell_kind_supported(c, backend_kind::gpu);
+    auto has_gpu_backend = [ctx](cell_kind c) {
+        return cell_kind_supported(c, backend_kind::gpu, ctx);
     };
 
     std::vector<cell_kind> kinds;

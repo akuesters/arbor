@@ -10,6 +10,7 @@ set(arbor_sources
     builtin_mechanisms.cpp
     cell_group_factory.cpp
     common_types_io.cpp
+    gpu_context.cpp
     local_alloc.cpp
     event_binner.cpp
     fvm_layout.cpp
@@ -39,9 +40,8 @@ set(arbor_sources
     spike_event_io.cpp
     spike_source_cell_group.cpp
     swcio.cpp
-    threadinfo.cpp
-    threading/cthread.cpp
     threading/threading.cpp
+    threading/thread_info.cpp
     thread_private_spike_store.cpp
     tree.cpp
     util/hostname.cpp
@@ -56,12 +56,12 @@ if(ARB_WITH_CUDA)
         backends/gpu/stimulus.cpp
         backends/gpu/stimulus.cu
         backends/gpu/threshold_watcher.cu
-        backends/gpu/managed_ptr.cpp
         backends/gpu/matrix_assemble.cu
         backends/gpu/matrix_interleave.cu
         backends/gpu/matrix_fine.cu
         backends/gpu/matrix_fine.cpp
         backends/gpu/matrix_solve.cu
+        backends/gpu/multi_event_stream.cpp
         backends/gpu/multi_event_stream.cu
         backends/gpu/shared_state.cu
         backends/gpu/stimulus.cu
