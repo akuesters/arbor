@@ -1,22 +1,26 @@
 #include <string>
 #include <sstream>
 
+#include <arbor/common_types.hpp>
 #include <arbor/context.hpp>
+#include <arbor/recipe.hpp>
 
 #include "strings.hpp"
 
 namespace pyarb {
-
-std::string proc_allocation_string(const arb::proc_allocation& a) {
+    
+std::string cell_member_string(const arb::cell_member_type& m) {
     std::stringstream s;
-    s << "<hardware resource allocation: threads " << a.num_threads << ", gpu ";
-    if (a.has_gpu()) {
-        s << a.gpu_id;
-    }
-    else {
-        s << "None";
-    }
-    s << ">";
+    s << "<cell_member: gid " << m.gid
+      << ", index " << m.index << ">";
+    return s.str();
+}
+    
+std::string connection_string(const arb::cell_connection& c) {
+    std::stringstream s;
+    s << "<connection: (" << c.source.gid << "," << c.source.index << ")"
+      << " -> (" << c.dest.gid << "," << c.dest.index << ")"
+      << " , delay " << c.delay << ", weight " << c.weight << ">";
     return s.str();
 }
 
@@ -29,6 +33,28 @@ std::string context_string(const arb::context& c) {
       << ", distributed " << (mpi? "MPI": "Local")
       << " ranks " << arb::num_ranks(c)
       << ">";
+    return s.str();
+}
+  
+std::string gap_junction_connection_string(const arb::gap_junction_connection& gc) {
+    std::stringstream s;
+    s << "<connection: (" << gc.local.gid << "," << gc.local.index << ")"
+    << " -> (" << gc.peer.gid << "," << gc.peer.index << ")"
+    << " , conductance " << gc.ggap << ">";
+    return s.str();
+}
+    
+std::string proc_allocation_string(const arb::proc_allocation& a) {
+    std::stringstream s;
+    s << "<hardware resource allocation: threads " << a.num_threads
+      << ", gpu ";
+    if (a.has_gpu()) {
+        s << a.gpu_id;
+    }
+    else {
+        s << "None";
+    }
+    s << ">";
     return s.str();
 }
 } // namespace pyarb

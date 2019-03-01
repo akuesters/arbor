@@ -18,8 +18,10 @@ add_subdirectory(pybind11)
 add_library(pyarb MODULE
     context.cpp
     exception.cpp
+    identifiers.cpp
     mpi.cpp
     pyarb.cpp
+    recipe.cpp
     strings.cpp
 )
 
