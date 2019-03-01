@@ -51,7 +51,7 @@ void register_identifiers(pybind11::module& m) {
         .value("cable1d", arb::cell_kind::cable1d_neuron)
         .value("lif", arb::cell_kind::lif_neuron)
         .value("spike_source", arb::cell_kind::spike_source);
-    
+
     // Wrap probes
 /*    pybind11::class_<arb::probe_info> probe_info(m, "probe_info",
         "Probes are specified in recipe objects;\n"

@@ -15,7 +15,7 @@ namespace pyarb {
 arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gid) const {
     auto guard = pybind11::gil_scoped_acquire();
     pybind11::object o = impl_->cell_description(gid);
-    
+
     if (pybind11::isinstance<arb::mc_cell>(o)) {
         return arb::util::unique_any(pybind11::cast<arb::mc_cell>(o));
     }
@@ -23,7 +23,7 @@ arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gi
     //  if (pybind11::isinstance<lif_cell>(o)) {
     //      return arb::util::unique_any(pybind11::cast<lif_cell>(o));
     //  }
-    
+
     throw python_error(
                         "recipe.cell_description returned \""
                         + std::string(pybind11::str(o))
@@ -34,16 +34,16 @@ arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gi
     using namespace std::string_literals;
     using pybind11::isinstance;
     using pybind11::cast;
-    
+
     // Aquire the GIL because it must be held when calling isinstance and cast.
     auto guard = pybind11::gil_scoped_acquire();
-    
+
     // Get the python list of pyarb::event_generator from the python front end.
     auto pygens = impl_->event_generators(gid);
-    
+
     std::vector<arb::event_generator> gens;
     gens.reserve(pygens.size());
-    
+
     for (auto& g: pygens) {
         // check that a valid Python event_generator was passed.
         if (!isinstance<pyarb::event_generator>(g)) {
@@ -54,22 +54,22 @@ arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gi
         }
         // get a reference to the python event_generator
         auto& p = cast<const pyarb::event_generator&>(g);
-        
-        // convert the event_generator to an arb::event_generator
+
+// convert the event_generator to an arb::event_generator
         gens.push_back(
                        arb::schedule_generator(
                                                {gid, p.lid}, p.weight, std::move(p.time_seq)));
     }
-    
+
     return gens;
 }
 */
 // TODO: implement py_recipe_shim::get_probe_info
-    
+
 // Register
 void register_recipe(pybind11::module& m) {
     using namespace pybind11::literals;
-      
+
 // Connections
     pybind11::class_<arb::cell_connection> cell_connection(m, "cell_connection",
         "Describes a connection between two cells:\n"
@@ -100,7 +100,7 @@ void register_recipe(pybind11::module& m) {
             "The delay time of the connection (unit: ms).")
         .def("__str__", &connection_string)
         .def("__repr__", &connection_string);
-    
+
 // Gap Junction Connections
     //TODO: update to C++ wording (eg. peer[2])
     pybind11::class_<arb::gap_junction_connection> gap_junction_connection(m, "gap_junction_connection",
@@ -127,7 +127,7 @@ void register_recipe(pybind11::module& m) {
             "Gap junction conductance (unit: μS).")
         .def("__str__", &gap_junction_connection_string)
         .def("__repr__", &gap_junction_connection_string);
-    
+
 // Recipes
     pybind11::class_<py_recipe,
                      py_recipe_trampoline,
