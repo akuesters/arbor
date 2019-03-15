@@ -1,28 +1,54 @@
-#include <pybind11/pybind11.h>
+#include <sstream>
+#include <string>
+#include <vector>
 
-#include <arbor/mc_cell.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/pytypes.h>
+#include <pybind11/stl.h>
+
+#include <arbor/benchmark_cell.hpp>
+#include <arbor/cable_cell.hpp>
+#include <arbor/event_generator.hpp>
+#include <arbor/lif_cell.hpp>
 #include <arbor/recipe.hpp>
+#include <arbor/spike_source_cell.hpp>
 
 #include "exception.hpp"
-#include "strings.hpp"
+#include "event_generator.hpp"
 #include "recipe.hpp"
+#include "strings.hpp"
 
 namespace pyarb {
 
-// Unwrap
+// ========================================= Unwrap =========================================
 // The py::recipe::cell_decription returns a pybind11::object, that is
 // unwrapped and copied into a arb::util::unique_any.
+
 arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gid) const {
+    using pybind11::isinstance;
+    using pybind11::cast;
+
+    // Aquire the GIL because it must be held when calling isinstance and cast.
     auto guard = pybind11::gil_scoped_acquire();
+
+    // Get the python object pyarb::cell_description from the python front end
     pybind11::object o = impl_->cell_description(gid);
 
-    if (pybind11::isinstance<arb::mc_cell>(o)) {
-        return arb::util::unique_any(pybind11::cast<arb::mc_cell>(o));
+    if (isinstance<arb::cable_cell>(o)) {
+        return arb::util::unique_any(cast<arb::cable_cell>(o));
     }
-    //TODO: include all cell kinds (lif, benchmark, spike_source)
-    //  if (pybind11::isinstance<lif_cell>(o)) {
-    //      return arb::util::unique_any(pybind11::cast<lif_cell>(o));
-    //  }
+
+    else if (isinstance<arb::lif_cell>(o)) {
+        return arb::util::unique_any(cast<arb::lif_cell>(o));
+    }
+
+    else if (isinstance<arb::spike_source_cell>(o)) {
+        return arb::util::unique_any(cast<arb::spike_source_cell>(o));
+    }
+
+    else if (isinstance<arb::benchmark_cell>(o)) {
+        return arb::util::unique_any(cast<arb::benchmark_cell>(o));
+    }
 
     throw python_error(
                         "recipe.cell_description returned \""
@@ -30,7 +56,7 @@ arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gi
                         + "\" which does not describe a known Arbor cell type.");
 }
 
-/*std::vector<arb::event_generator> py_recipe_shim::event_generators(arb::cell_gid_type gid) const {
+std::vector<arb::event_generator> py_recipe_shim::event_generators(arb::cell_gid_type gid) const {
     using namespace std::string_literals;
     using pybind11::isinstance;
     using pybind11::cast;
@@ -55,7 +81,7 @@ arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gi
         // get a reference to the python event_generator
         auto& p = cast<const pyarb::event_generator&>(g);
 
-// convert the event_generator to an arb::event_generator
+        // convert the event_generator to an arb::event_generator
         gens.push_back(
                        arb::schedule_generator(
                                                {gid, p.lid}, p.weight, std::move(p.time_seq)));
@@ -63,10 +89,10 @@ arb::util::unique_any py_recipe_shim::get_cell_description(arb::cell_gid_type gi
 
     return gens;
 }
-*/
+
 // TODO: implement py_recipe_shim::get_probe_info
 
-// Register
+// ========================================= Register =========================================
 void register_recipe(pybind11::module& m) {
     using namespace pybind11::literals;
 
@@ -79,10 +105,10 @@ void register_recipe(pybind11::module& m) {
         .def(pybind11::init<>(
             [](){return arb::cell_connection({0u,0u}, {0u,0u}, 0.f, 0.f);}),
             "Construct a connection with default arguments:\n"
-            "  source:      gid 0, index 0\n"
-            "  destination: gid 0, index 0\n"
-            "  weight:      0 S⋅cm⁻²\n"
-            "  delay:       0 ms\n")
+            "  source:      gid 0, index 0.\n"
+            "  destination: gid 0, index 0.\n"
+            "  weight:      0 S⋅cm⁻².\n"
+            "  delay:       0 ms.\n")
         .def(pybind11::init<arb::cell_member_type, arb::cell_member_type, float, float>(),
             "source"_a, "destination"_a, "weight"_a, "delay"_a,
             "Construct a connection with arguments:\n"
@@ -110,9 +136,9 @@ void register_recipe(pybind11::module& m) {
         .def(pybind11::init<>(
             [](){return arb::gap_junction_connection({0u,0u}, {0u,0u}, 0.f);}),
             "Construct a gap junction connection with default arguments:\n"
-            "  local: gid 0, index 0\n"
-            "  peer:  gid 0, index 0\n"
-            "  ggap:  0 μS\n")
+            "  local: gid 0, index 0.\n"
+            "  peer:  gid 0, index 0.\n"
+            "  ggap:  0 μS.\n")
         .def(pybind11::init<arb::cell_member_type, arb::cell_member_type, double>(),
             "local"_a, "peer"_a, "ggap"_a,
             "Construct a gap junction connection with arguments:\n"
@@ -138,21 +164,26 @@ void register_recipe(pybind11::module& m) {
         .def(pybind11::init<>())
         .def("num_cells", &py_recipe::num_cells, "The number of cells in the model (default: 0).")
         .def("cell_description", &py_recipe::cell_description, pybind11::return_value_policy::copy,
-            "High level description of the cell with global identifier gid.")
-        .def("kind", &py_recipe::kind,
              "gid"_a,
-             "The cell_kind of cell with global identifier gid.")
-        .def("connections_on", &py_recipe::connections_on,
+             "High level description of the cell with global identifier gid.")
+        .def("cell_kind", &py_recipe::cell_kind,
              "gid"_a,
-             "A list of the incoming connections to gid")
+             "The kind of cell with global identifier gid.")
         .def("num_sources", &py_recipe::num_sources,
              "gid"_a,
              "The number of spike sources on gid")
         .def("num_targets", &py_recipe::num_targets,
              "gid"_a,
              "The number of event targets on gid (e.g. synapses)")
-        // TODO: py_recipe_shim::get_probe_info
-        // TODO: py_recipe_shim::get_num_probes
+        // TODO: py_recipe::num_probes
+        // TODO: py_recipe::num_gap_junction_sites
+        // TODO: py_recipe::event_generators
+        .def("connections_on", &py_recipe::connections_on,
+             "gid"_a,
+             "A list of the incoming connections to gid")
+        // TODO: py_recipe::gap_connections_on
+        // TODO: py_recipe::get_probe
+        // TODO: py_recipe::get_global_properties
         .def("__str__", [](const py_recipe&){return "<pyarb.recipe>";})
         .def("__repr__", [](const py_recipe&){return "<pyarb.recipe>";});
 }

@@ -48,8 +48,8 @@ void register_identifiers(pybind11::module& m) {
         "Enumeration used to indentify the cell type/kind, used by the model \
         to group equal kinds in the same cell group.")
         .value("benchmark", arb::cell_kind::benchmark)
-        .value("cable1d", arb::cell_kind::cable1d_neuron)
-        .value("lif", arb::cell_kind::lif_neuron)
+        .value("cable", arb::cell_kind::cable)
+        .value("lif", arb::cell_kind::lif)
         .value("spike_source", arb::cell_kind::spike_source);
 
     // Wrap probes
