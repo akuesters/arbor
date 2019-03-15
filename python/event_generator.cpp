@@ -23,7 +23,6 @@ event_generator make_event_generator(
 }
 
 // ===================================== Register =====================================
-
 void register_event_generators(pybind11::module& m) {
     using namespace pybind11::literals;
 
@@ -77,7 +76,16 @@ void register_event_generators(pybind11::module& m) {
             "Construct a Poisson schedule with default arguments:\n"
             "  tstart: 0 ms.\n"
             "  freq:   10 Hz.\n"
-            "  seed:   A Mersenne Twister pseudo-random generator of 64-bit numbers with a state size of 19937 bits and seed zero.")
+            "  seed:   0 for a Mersenne Twister pseudo-random generator of 64-bit numbers with a state size of 19937 bits.")
+        .def(pybind11::init<arb::time_type, std::mt19937_64::result_type>(),
+            "Construct a Poisson schedule with arguments:\n"
+            "  freq:   The frequency (in Hz).\n"
+            "  seed:   The seed of the Mersenne Twister pseudo-random generator of 64-bit numbers with a state size of 19937 bits.")
+        .def(pybind11::init<arb::time_type, arb::time_type, std::mt19937_64::result_type>(),
+            "Construct a Poisson schedule with arguments:\n"
+            "  tstart: The first time in the Poisson schedule (in ms).\n"
+            "  freq:   The frequency (in Hz).\n"
+            "  seed:   The seed of the Mersenne Twister pseudo-random generator of 64-bit numbers with a state size of 19937     bits.")
         .def_readwrite("tstart", &poisson_schedule_shim::tstart,
             "The first time in the Poisson schedule (in ms).")
         .def_readwrite("freq", &poisson_schedule_shim::freq,
