@@ -127,9 +127,20 @@ struct poisson_schedule_shim {
 
 std::string schedule_regular_string(const regular_schedule_shim& r) {
     std::stringstream s;
-    s << "<regular_schedule: tstart " << r.tstart << " ms"
-    << ", dt " << r.dt << " ms"
-    << ", tstop " << r.tstop << " ms" << ">";
+    s << "<regular_schedule: tstart ";
+    if (r.tstart == arb::terminal_time) {
+        s << "None";
+    }
+    else
+        s << r.tstart << " ms";
+    s << ", dt " << r.dt << " ms"
+    << ", tstop ";
+    if (r.tstop == arb::terminal_time) {
+        s << "None";
+    }
+    else
+        s << r.tstop << " ms";
+    s << ">";
     return s.str();
 };
 
