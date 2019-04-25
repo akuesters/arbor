@@ -24,9 +24,9 @@ auto is_nonneg = [](auto&& t){ return t>=0.; };
 struct regular_schedule_shim {
     using time_type = arb::time_type;
     using opt_time_type = arb::util::optional<time_type>;
-    time_type default_tstart = arb::terminal_time;
-    time_type default_dt = 0.;
-    time_type default_tstop = arb::terminal_time;
+    constexpr time_type default_tstart = arb::terminal_time;
+    constexpr time_type default_dt = 0.;
+    constexpr time_type default_tstop = arb::terminal_time;
 
     time_type tstart, dt, tstop;
 
