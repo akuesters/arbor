@@ -20,7 +20,7 @@
 
 namespace pyarb {
 
-auto is_int_or_minone = [](auto&& t){ return (int (t)==t or t==-1); };
+auto is_int_or_minone = [](auto&& t){ return ((t==int(t) and t>=0) or t==-1); };
 
 //#ifdef ARB_MPI_ENABLED
 //#ifdef ARB_WITH_MPI4PY
@@ -102,7 +102,7 @@ void register_contexts(pybind11::module& m) {
 #else
         .def(pybind11::init(
             [](int threads, opt_int gpu){
-                int gpu_id = pyarb::assert_predicate(gpu.value_or(-1), is_nonneg_or_minone, "gpu must be None, or a non-negative integer.");
+                int gpu_id = pyarb::assert_predicate(gpu.value_or(-1), is_int_or_minone, "gpu must be None, or a non-negative integer.");
                 return context_shim(arb::make_context(arb::proc_allocation(threads, gpu_id)));
             }),
              "threads"_a=1, "gpu"_a=pybind11::none(),
