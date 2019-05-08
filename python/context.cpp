@@ -13,9 +13,6 @@
 
 #ifdef ARB_MPI_ENABLED
 #include "mpi.hpp"
-#ifdef ARB_WITH_MPI4PY
-#include <mpi4py/mpi4py.h>
-#endif
 #endif
 
 namespace pyarb {
@@ -28,7 +25,7 @@ void register_contexts(pybind11::module& m) {
     using namespace std::string_literals;
     using namespace pybind11::literals;
     using opt_int = arb::util::optional<int>;
-    using opt_mpi_comm = arb::util::optional<mpi_comm_shim&>;
+    using opt_mpi_comm = arb::util::optional<mpi_comm_shim>;
 
     pybind11::class_<arb::proc_allocation> proc_allocation(m, "proc_allocation");
     proc_allocation
@@ -69,27 +66,16 @@ void register_contexts(pybind11::module& m) {
              "  alloc:   The computational resources to be used for the simulation.\n"
              "  c:       The MPI communicator.\n")
         .def(pybind11::init(
-//            [](int threads, opt_int gpu, opt_mpi_comm mpi){
             [](int threads, pybind11::object gpu, pybind11::object mpi){
                 opt_int gpu_id = py2optional<int>(gpu, "gpu must be None, or a non-negative integer.", is_int_or_minone);
                 arb::proc_allocation alloc(threads, gpu_id.value_or(-1));
+
                 if (mpi.is_none()) {
                     return context_shim(arb::make_context(alloc));
                 }
-                auto& c = pybind11::cast<mpi_comm_shim&>(mpi);
-                return context_shim(arb::make_context(alloc, c.comm));
-
-//#ifdef ARB_WITH_MPI4PY
-//// communicator is pointer
-//                auto& c = pyarb::assert_predicate(mpi.value_or(MPI_COMM_WORLD), is_mpi_comm, "mpi must be None, or an MPI communicator.");
-//#else
-//// communicator is integer
-//                auto& c = pyarb::assert_predicate(mpi.value_or(MPI_COMM_WORLD), is_mpi_comm, "mpi must be None, or an MPI communicator.");
-//#endif
-//                if (!c.comm) {
-//                    return context_shim(arb::make_context(alloc));
-//                }
-//                else return context_shim(arb::make_context(alloc, c.comm));
+                opt_mpi_comm c = py2optional<mpi_comm_shim>(mpi, "mpi must be None, or an MPI communicator.");
+                auto comm = c.value_or(MPI_COMM_WORLD).comm;
+                return context_shim(arb::make_context(alloc, comm));
             }),
              "threads"_a=1, "gpu"_a=pybind11::none(), "mpi"_a=pybind11::none(),
              "Arguments:\n"
