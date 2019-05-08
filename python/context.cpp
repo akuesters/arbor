@@ -66,13 +66,19 @@ void register_contexts(pybind11::module& m) {
              "  alloc:   The computational resources to be used for the simulation.\n")
 #ifdef ARB_MPI_ENABLED
         .def(pybind11::init(
-            [](const arb::proc_allocation& alloc, mpi_comm_shim c){
-                return context_shim(arb::make_context(alloc, c.comm));
+            [](const arb::proc_allocation& alloc, pybind11::object mpi){
+                if (mpi.is_none()) {
+                    return context_shim(arb::make_context(alloc));
+                }
+                opt_mpi_comm c = py2optional<mpi_comm_shim>(mpi,
+                        "mpi must be None, or an MPI communicator.");
+                auto comm = c.value_or(MPI_COMM_WORLD).comm;
+                return context_shim(arb::make_context(alloc, comm));
             }),
-             "alloc"_a, "comm"_a,
+             "alloc"_a, "mpi"_a=pybind11::none(),
              "Construct a distributed context with arguments:\n"
              "  alloc:   The computational resources to be used for the simulation.\n"
-             "  comm:    The MPI communicator.\n")
+             "  mpi:     The MPI communicator (defaults to None for no MPI).\n")
         .def(pybind11::init(
             [](int threads, pybind11::object gpu, pybind11::object mpi){
                 opt_int gpu_id = py2optional<int>(gpu,
