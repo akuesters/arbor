@@ -85,7 +85,7 @@ struct explicit_schedule_shim {
         times = std::move(t);
         // Sort the times in ascending order if necessary
         if (!std::is_sorted(times.begin(), times.end())) {
-            times.sort();
+            std::sort(times.begin(), times.end());
         }
         // Assert that there are no negative times
         if (times.size()) {

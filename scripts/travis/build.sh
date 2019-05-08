@@ -46,7 +46,7 @@ fi
 if [[ "${WITH_PYTHON}" == "true" ]]; then
     echo "python     : on"
     ARB_WITH_PYTHON="ON"
-    export PYTHONPATH=${base_path}/${build_path}/lib:${PYTHONPATH}
+    export PYTHONPATH=$PYTHONPATH:${base_path}/${build_path}/lib
     python_path=$base_path/python
     echo "python src : ${python_path}"
     echo "PYTHONPATH : ${PYTHONPATH}"
