@@ -29,7 +29,7 @@ class Contexts(unittest.TestCase):
         # test that by default proc_allocation has 1 thread and no GPU, no MPI
         self.assertEqual(alloc.threads, 1)
         self.assertFalse(alloc.has_gpu)
-        self.assertEqual(alloc.gpu_id, -1)
+        self.assertEqual(alloc.gpu_id, None)
 
         alloc.threads = 20
         self.assertEqual(alloc.threads, 20)
@@ -52,8 +52,9 @@ class Contexts(unittest.TestCase):
         # change allocation
         alloc.threads = 23
         self.assertEqual(alloc.threads, 23)
-        alloc.gpu_id = -1
-        self.assertEqual(alloc.gpu_id, -1)
+        alloc.gpu_id = 1
+        self.assertEqual(alloc.gpu_id, 1)
+        alloc.gpu_id = None
 
         # test context construction with proc_allocation()
         ctx2 = arb.context(alloc)
