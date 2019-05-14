@@ -49,7 +49,8 @@ struct proc_allocation_shim {
     const opt_int get_gpu_id()      const { return gpu_id; }
     const int     get_num_threads() const { return num_threads; }
 
-    const bool has_gpu = (gpu_id.value_or(-1) >= 0) ? true : false;
+    //const bool has_gpu = (gpu_id.value_or(-1) >= 0) ? true : false;
+    const bool    has_gpu()         const { return (gpu_id.value_or(-1) >= 0) ? true : false; }
 
     arb::proc_allocation allocation() const {
         return arb::proc_allocation(num_threads, gpu_id.value_or(-1));
@@ -116,7 +117,8 @@ void register_contexts(pybind11::module& m) {
             "The identifier of the GPU to use.\n"
             "Corresponds to the integer index used to identify GPUs in CUDA API calls.")
 //        .def_property_readonly("has_gpu", &arb::proc_allocation::has_gpu,
-        .def_readonly("has_gpu", &proc_allocation_shim::has_gpu,
+//        .def_readonly("has_gpu", &proc_allocation_shim::has_gpu,
+	.def_property_readonly("has_gpu", &proc_allocation_shim::has_gpu,
             "Whether a GPU is being used (True/False).")
 //        .def("__str__", &proc_allocation_string)
 //        .def("__repr__", &proc_allocation_string);
