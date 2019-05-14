@@ -69,7 +69,7 @@ class Contexts(unittest.TestCase):
         self.assertEqual(ctx.rank, 0)
 
     def test_context(self):
-        ctx = arb.context(threads = 42, gpu_id = None, mpi = None)
+        ctx = arb.context(threads = 42, gpu_id = None)
 
         self.assertFalse(ctx.has_mpi)
         self.assertFalse(ctx.has_gpu)
@@ -86,28 +86,6 @@ class Contexts(unittest.TestCase):
         self.assertEqual(ctx.has_gpu, alloc.has_gpu)
         self.assertEqual(ctx.ranks, 1)
         self.assertEqual(ctx.rank, 0)
-
-    def test_context_alloc_comm(self):
-        alloc = arb.proc_allocation()
-
-        # test context construction with proc_allocation()
-        ctx = arb.context(alloc, mpi = None)
-        self.assertEqual(ctx.threads, alloc.threads)
-        self.assertEqual(ctx.has_gpu, alloc.has_gpu)
-        self.assertFalse(ctx.has_mpi)
-        self.assertEqual(ctx.ranks, 1)
-        self.assertEqual(ctx.rank, 0)
-
-    def test_exceptions_context(self):
-        alloc = arb.proc_allocation()
-
-        with self.assertRaisesRegex(RuntimeError,
-            "mpi must be None, or an MPI communicator."):
-            arb.context(mpi='MPI_COMM_WORLD')
-        with self.assertRaisesRegex(RuntimeError,
-            "mpi must be None, or an MPI communicator."):
-            arb.context(alloc, mpi=0)
-
 
 def suite():
     # specify class and test functions in tuple (here: all tests starting with 'test' from class Contexts
