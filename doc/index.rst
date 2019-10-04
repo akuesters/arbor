@@ -69,9 +69,10 @@ The following BibTeX can be used to cite Arbor:
 Alternative citation formats for the paper can be `downloaded here <https://ieeexplore.ieee.org/abstract/document/8671560>`_, and a preprint is available at `arXiv <https://arxiv.org/abs/1901.07454>`_.
 
 .. toctree::
-   :caption: Getting Stared:
+   :caption: Getting Started:
 
    install
+   tutorial
 
 .. toctree::
    :caption: Arbor Models:
